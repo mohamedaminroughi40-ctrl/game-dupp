@@ -1,0 +1,218 @@
+#include "game.h"
+
+void GamePlay::initBackground(Vector2u winSize, int level)
+{
+    std::string bgPath1, bgPath2;
+
+    // Choose background images based on level
+    switch (level)
+    {
+    case 1:
+        bgPath1 = "assets/Backgrounds/PNG/summer6/Summer6.png";
+        bgPath2 = "assets/bg2.png";
+        break;
+    case 2:
+        bgPath1 = "assets/bg1.png";
+        bgPath2 = "assets/bg2.png";
+        break;
+    case 3:
+        bgPath1 = "assets/bg3.png";
+        bgPath2 = "assets/bg2.png"; // or any other
+        break;
+    default:
+        bgPath1 = "assets/bg1.png";
+        bgPath2 = "assets/bg2.png";
+    }
+
+    if (!backgroundTex1.loadFromFile(bgPath1))
+        std::cout << "Error loading background 1 for level " << level << std::endl;
+    if (!backgroundTex2.loadFromFile(bgPath2))
+        std::cout << "Error loading background 2 for level " << level << std::endl;
+
+    background1.setTexture(backgroundTex1);
+    background2.setTexture(backgroundTex2);
+
+    float scaleX1 = (float)winSize.x / backgroundTex1.getSize().x;
+    float scaleY1 = (float)winSize.y / backgroundTex1.getSize().y;
+    background1.setScale(scaleX1, scaleY1);
+
+    float scaleX2 = (float)winSize.x / backgroundTex2.getSize().x;
+    float scaleY2 = (float)winSize.y / backgroundTex2.getSize().y;
+    background2.setScale(scaleX2, scaleY2);
+}
+
+void GamePlay::initEnemies()
+{
+    enemies.clear();
+
+    // Level 1: 2 enemies, HP 20 each
+    // Level 2: 3 enemies, HP 30 each
+    // Level 3: 4 enemies, HP 40 each (or boss only)
+    int numEnemies = 2;
+    int enemyHp = 20;
+    float startX = (float)windowSize.x - 200;   // right side of screen
+
+    switch (currentLevel)
+    {
+    case 1:
+        numEnemies = 2;
+        enemyHp = 20;
+        break;
+    case 2:
+        numEnemies = 3;
+        enemyHp = 30;
+        break;
+    case 3:
+        numEnemies = 4;
+        enemyHp = 40;
+        break;
+    default:
+        numEnemies = 2;
+        enemyHp = 20;
+    }
+
+    for (int i = 0; i < numEnemies; ++i)
+    {
+        enemie e;
+        // Place enemies with horizontal spacing
+        float xPos = startX - (i * 150);
+        e.setposition(xPos, (float)windowSize.y - 190);
+        e.getSprite().scale(1.5f, 1.5f);
+
+        // Set custom HP (we need a method in enemie class)
+        // For now, we damage them to lower HP or add setHp() method.
+        // Quick solution: hit them until desired HP (ugly). Better: add setHp().
+        // We'll assume we add a public method setHp(int) in enemie.h
+        e.setHp(enemyHp);
+
+        enemies.push_back(e);
+    }
+}
+
+void GamePlay::iniBoss()
+{
+    // Boss HP based on level
+    int bossHp = 50;
+    switch (currentLevel)
+    {
+    case 1: bossHp = 40; break;
+    case 2: bossHp = 60; break;
+    case 3: bossHp = 80; break;
+    default: bossHp = 50;
+    }
+    Mbooss.setposition(1000.f, (float)windowSize.y - 330);
+    Mbooss.getSprite().scale(3.f, 3.f);
+    Mbooss.setHp(bossHp);   // need setHp in boss class (inherited or own)
+}
+
+void GamePlay::reset()
+{
+    initBackground(windowSize, currentLevel);   // pass level
+    initEnemies();
+    iniBoss();
+
+    P.setPosition(100.f, (float)windowSize.y - 280);
+    P.setGround((float)windowSize.y - 280);
+    P.getSrite().scale(2.f, 2.f);
+    // Reset player health if needed
+    P.resetHealth();   // optional
+}
+
+GamePlay::GamePlay(Vector2u winSize, int level)
+    : currentLevel(level), windowSize(winSize)
+{
+    reset();
+}
+
+void GamePlay::checkPattack()
+{
+    FloatRect playerHitBox = P.getHitBox();
+
+    for (size_t i = 0; i < enemies.size(); ++i)
+    {
+        if (playerHitBox.intersects(enemies[i].getSprite().getGlobalBounds()))
+        {
+            if (P.isAttakFrame() && !P.getAttakeDealt())
+            {
+                enemies[i].takeDamage(10);
+                P.setAttakeDealt(true);
+                std::cout << "Player attacked enemy " << i << " health: " << enemies[i].getHeah() << std::endl;
+            }
+        }
+    }
+
+    if (playerHitBox.intersects(Mbooss.getSprite().getGlobalBounds()))
+    {
+        if (P.isAttakFrame() && !P.getAttakeDealt())
+        {
+            Mbooss.takeDamage(10);
+            P.setAttakeDealt(true);
+            std::cout << "Player attacked BOSS! Health: " << Mbooss.getHeah() << std::endl;
+        }
+    }
+}
+
+void GamePlay::checkEAttack()
+{
+    for (size_t i = 0; i < enemies.size(); ++i)
+    {
+        FloatRect enemyHitBox = enemies[i].getHitBox();
+        if (enemyHitBox.intersects(P.getSrite().getGlobalBounds()))
+        {
+            if (enemies[i].isAttaking() && !enemies[i].getAttackDealt() && enemies[i].getAttackFarme())
+            {
+                enemies[i].setAttackDealt(true);
+                P.takeDamage(10);
+                std::cout << "Player damaged by enemy!" << std::endl;
+            }
+        }
+    }
+}
+
+void GamePlay::checkBAttack()
+{
+    FloatRect bossHitBox = Mbooss.getHitBox();
+    if (bossHitBox.intersects(P.getSrite().getGlobalBounds()))
+    {
+        if (Mbooss.isAttaking() && !Mbooss.getAttackDealt() && Mbooss.getAttackFarme())
+        {
+            Mbooss.setAttackDealt(true);
+            P.takeDamage(10);
+            std::cout << "Player damaged by BOSS!" << std::endl;
+        }
+    }
+}
+
+void GamePlay::update()
+{
+    checkPattack();
+    checkEAttack();
+    checkBAttack();
+    P.update();
+    Mbooss.update(P.getPosition().x);
+
+    for (size_t i = 0; i < enemies.size(); ++i)
+    {
+        enemies[i].update(P.getPosition().x);
+        if (enemies[i].death())
+        {
+            enemies.erase(enemies.begin() + i);
+            --i;
+        }
+    }
+}
+
+void GamePlay::render(RenderWindow& window)
+{
+    window.draw(background1);
+    window.draw(background2);
+    window.draw(Mbooss.getSprite());
+    for (auto& e : enemies)
+        window.draw(e.getSprite());
+    window.draw(P.getSrite());
+}
+
+bool GamePlay::isGameOver() const
+{
+    return (P.getHealth() <= 0);
+}
