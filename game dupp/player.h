@@ -109,6 +109,7 @@ public:
 	void setAttakeDealt(bool dealt) { this->attakeDealt = dealt; }  // Add setter
 	int getHealth() const { return this->hp; }
 	void resetHealth() { this->hp = maxHealth; }
+	int getMaxHealth() const { return maxHealth; }
 
 };
 

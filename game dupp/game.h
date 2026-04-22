@@ -39,9 +39,24 @@ private:
     bool levelCompleted;  // to avoid multiple transitions
     bool gameCompleted;   // after level 3
 
+    // Death sequence
+    bool deathSequenceActive;
+    Clock deathTimer;
+    float deathDuration = 2.0f;
+    bool deathScreenFinished;   // tells menu that game is really over
+    void drawDeathScreen(RenderWindow& window);
+
+    // Victory sequence
+    bool victorySequenceActive;
+    Clock victoryTimer;
+    float victoryDuration = 3.0f;
+    bool victoryFinished;
+    void drawVictoryScreen(RenderWindow& window);
+
     void initEnemies();
     void iniBoss();
-    void reset(bool resetScore = true);  // optional reset score
+    void reset(bool resetScore = true);
+    void drawHealthBar(RenderWindow& window);
 
 public:
     GamePlay(Vector2u winSize, int level = 1);
@@ -50,7 +65,7 @@ public:
     void checkBAttack();
     void update();
     void render(RenderWindow& window);
-    bool isGameOver() const;
+    bool isGameOver() const;                // returns true when death screen finished
     bool isGameCompleted() const { return gameCompleted; }
     int getCurrentLevel() const { return currentLevel; }
 };
