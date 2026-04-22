@@ -65,7 +65,7 @@ public:
 
 	Sprite& getSprite();
 	int getHeah();
-	FloatRect getHitBox();
+	virtual FloatRect getHitBox();
 	bool death();
 
 	// hit effect

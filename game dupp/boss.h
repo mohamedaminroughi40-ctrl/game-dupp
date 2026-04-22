@@ -12,6 +12,7 @@ private:
 	Texture bAttackTex;
 	Texture bIdleTex;
 	Texture bWalkTex;
+	Texture bWalkBAckTex;
 
 	void initBoss();
 	void spriteUp() override;  // Override parent method
@@ -21,6 +22,8 @@ public:
 	void update(float playerPosX);
 	bool getAttackFarme();
 	int getHeah();
+
+
 };
 
 #endif

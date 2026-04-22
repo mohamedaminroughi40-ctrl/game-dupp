@@ -149,9 +149,9 @@ Menu::Menu(float width, float height)
 
     if (!levelTextures[0].loadFromFile("assets/Backgrounds/PNG/summer6/Summer6.png"))
         cout << "Error loading level1.png!" << endl;
-    if (!levelTextures[1].loadFromFile("assets/Backgrounds/PNG/summer5/Summer5.png"))
+    if (!levelTextures[1].loadFromFile("assets/bg1.png"))
         cout << "Error loading level2.png!" << endl;
-    if (!levelTextures[2].loadFromFile("assets/Backgrounds/PNG/summer 1/Summer1.png"))
+    if (!levelTextures[2].loadFromFile("assets/bg3.png"))
         cout << "Error loading level3.png!" << endl;
 
     for (int i = 0; i < 3; i++)
@@ -227,19 +227,30 @@ void Menu::updateVolume()
 
 void Menu::update(float deltaTime)
 {
-    if (currentState == GAME_PLAY && currentGame)
-    {
-        currentGame->update();
-        if (currentGame->isGameOver())
+    
+        if (currentState == GAME_PLAY && currentGame)
         {
-            // Game over, return to level select
-            currentState = LEVEL_SELECT;
-            delete currentGame;
-            currentGame = nullptr;
-            sound.play(); // optional feedback
+            currentGame->update();
+            if (currentGame->isGameOver())
+            {
+                // Game over, return to level select
+                currentState = LEVEL_SELECT;
+                delete currentGame;
+                currentGame = nullptr;
+                sound.play();
+            }
+            else if (currentGame->isGameCompleted())
+            {
+                // Completed all levels, return to level select
+                currentState = LEVEL_SELECT;
+                delete currentGame;
+                currentGame = nullptr;
+                sound.play();
+                // Optional: you could show a victory message here
+            }
         }
-    }
 }
+
 
 void Menu::moveUp()
 {

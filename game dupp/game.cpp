@@ -4,7 +4,6 @@ void GamePlay::initBackground(Vector2u winSize, int level)
 {
     std::string bgPath1, bgPath2;
 
-    // Choose background images based on level
     switch (level)
     {
     case 1:
@@ -17,7 +16,7 @@ void GamePlay::initBackground(Vector2u winSize, int level)
         break;
     case 3:
         bgPath1 = "assets/bg3.png";
-        bgPath2 = "assets/bg2.png"; // or any other
+        bgPath2 = "assets/bg2.png";
         break;
     default:
         bgPath1 = "assets/bg1.png";
@@ -45,12 +44,9 @@ void GamePlay::initEnemies()
 {
     enemies.clear();
 
-    // Level 1: 2 enemies, HP 20 each
-    // Level 2: 3 enemies, HP 30 each
-    // Level 3: 4 enemies, HP 40 each (or boss only)
     int numEnemies = 2;
     int enemyHp = 20;
-    float startX = (float)windowSize.x - 200;   // right side of screen
+    float startX = (float)windowSize.x - 200;
 
     switch (currentLevel)
     {
@@ -74,24 +70,16 @@ void GamePlay::initEnemies()
     for (int i = 0; i < numEnemies; ++i)
     {
         enemie e;
-        // Place enemies with horizontal spacing
         float xPos = startX - (i * 150);
         e.setposition(xPos, (float)windowSize.y - 190);
-        e.getSprite().scale(1.5f, 1.5f);
-
-        // Set custom HP (we need a method in enemie class)
-        // For now, we damage them to lower HP or add setHp() method.
-        // Quick solution: hit them until desired HP (ugly). Better: add setHp().
-        // We'll assume we add a public method setHp(int) in enemie.h
+        e.getSprite().setScale(1.5f, 1.5f);   // FIXED: absolute scale
         e.setHp(enemyHp);
-
         enemies.push_back(e);
     }
 }
 
 void GamePlay::iniBoss()
 {
-    // Boss HP based on level
     int bossHp = 50;
     switch (currentLevel)
     {
@@ -101,27 +89,61 @@ void GamePlay::iniBoss()
     default: bossHp = 50;
     }
     Mbooss.setposition(1000.f, (float)windowSize.y - 330);
-    Mbooss.getSprite().scale(3.f, 3.f);
-    Mbooss.setHp(bossHp);   // need setHp in boss class (inherited or own)
+    Mbooss.getSprite().setScale(3.f, 3.f);   // FIXED: absolute scale
+    Mbooss.setHp(bossHp);
 }
 
-void GamePlay::reset()
+void GamePlay::reset(bool resetScore)
 {
-    initBackground(windowSize, currentLevel);   // pass level
+    initBackground(windowSize, currentLevel);
     initEnemies();
     iniBoss();
 
     P.setPosition(100.f, (float)windowSize.y - 280);
     P.setGround((float)windowSize.y - 280);
-    P.getSrite().scale(2.f, 2.f);
-    // Reset player health if needed
-    P.resetHealth();   // optional
+    P.getSrite().setScale(2.f, 2.f);   // FIXED: absolute scale
+    P.resetHealth();
+
+    if (resetScore)
+    {
+        score = 0;
+    }
+    bossDeathRewarded = false;
+    levelCompleted = false;
+
+    // Font and score text setup
+    if (!scoreFont.loadFromFile("assets/ARCADE.ttf"))
+    {
+        std::cout << "Warning: Could not load assets/ARCADE.ttf for score" << std::endl;
+    }
+    scoreText.setFont(scoreFont);
+    scoreText.setCharacterSize(48);
+    scoreText.setFillColor(sf::Color::Yellow);
+    scoreText.setOutlineColor(sf::Color::Black);
+    scoreText.setOutlineThickness(3);
+    scoreText.setPosition(30, 20);
+
+    scoreBg.setSize(sf::Vector2f(250, 70));
+    scoreBg.setFillColor(sf::Color(0, 0, 0, 180));
+    scoreBg.setPosition(20, 10);
+
+    updateScoreDisplay();
 }
 
 GamePlay::GamePlay(Vector2u winSize, int level)
-    : currentLevel(level), windowSize(winSize)
+    : currentLevel(level), windowSize(winSize), gameCompleted(false), levelCompleted(false)
 {
-    reset();
+    reset(true);
+}
+
+void GamePlay::updateScoreDisplay()
+{
+    std::stringstream ss;
+    ss << "SCORE: " << score;
+    scoreText.setString(ss.str());
+
+    float textWidth = scoreText.getLocalBounds().width;
+    scoreBg.setSize(sf::Vector2f(textWidth + 40, 70));
 }
 
 void GamePlay::checkPattack()
@@ -185,6 +207,8 @@ void GamePlay::checkBAttack()
 
 void GamePlay::update()
 {
+    if (gameCompleted) return;
+
     checkPattack();
     checkEAttack();
     checkBAttack();
@@ -196,8 +220,33 @@ void GamePlay::update()
         enemies[i].update(P.getPosition().x);
         if (enemies[i].death())
         {
+            score += 50;
+            updateScoreDisplay();
             enemies.erase(enemies.begin() + i);
             --i;
+        }
+    }
+
+    if (Mbooss.death() && !bossDeathRewarded)
+    {
+        score += 100;
+        updateScoreDisplay();
+        bossDeathRewarded = true;
+    }
+
+    if (!levelCompleted && enemies.empty() && Mbooss.death())
+    {
+        levelCompleted = true;
+        if (currentLevel < 3)
+        {
+            currentLevel++;
+            std::cout << "Level " << currentLevel - 1 << " completed! Moving to level " << currentLevel << std::endl;
+            reset(false);
+        }
+        else
+        {
+            gameCompleted = true;
+            std::cout << "Congratulations! You completed all levels!" << std::endl;
         }
     }
 }
@@ -210,6 +259,8 @@ void GamePlay::render(RenderWindow& window)
     for (auto& e : enemies)
         window.draw(e.getSprite());
     window.draw(P.getSrite());
+    window.draw(scoreBg);
+    window.draw(scoreText);
 }
 
 bool GamePlay::isGameOver() const

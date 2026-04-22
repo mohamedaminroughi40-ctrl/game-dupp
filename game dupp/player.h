@@ -18,7 +18,8 @@ enum state
 	jump,
 	death,
 	attak,
-	hurt  // Add hurt state
+	attackBack,
+	hurt  
 };
 
 
@@ -28,12 +29,13 @@ class player
 
 	//texturs and sprite
 	Texture playerIdleTex;
+	Texture playerAttackBack;
 	Texture playerAttakTex;
 	Texture playerJumpTex;
 	Texture playerRunTex;
 	Texture playerRunBackTex;
 	Texture playerDeathTex;
-	Texture playerHurtTex;  // Add hurt texture
+	Texture playerHurtTex; 
 	Sprite playerSprite;
 	state playerState;
 	state playerLastState;

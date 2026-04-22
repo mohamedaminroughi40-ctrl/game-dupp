@@ -5,6 +5,7 @@ void boss::initBoss()
 	this->bAttackTex.loadFromFile("assets/org/orgAttack.png");
 	this->bIdleTex.loadFromFile("assets/org/orgIdle.png");
 	this->bWalkTex.loadFromFile("assets/org/orgWalk.png");
+	this->bWalkBAckTex.loadFromFile("assets/org/orgeWalkBack.png");
 
 	this->widthFrame = 144.f;
 	this->hightFrame = 80.f;
@@ -33,7 +34,7 @@ void boss::spriteUp()
 		break;
 	case EshaseB:
 		this->maxFrame = 5;
-		this->getSprite().setTexture(this->bWalkTex);
+		this->getSprite().setTexture(this->bWalkBAckTex);
 		this->animationTimeLimit = 0.15f;
 		break;
 	case dead:
@@ -70,4 +71,5 @@ int boss::getHeah()
 {
 	return this->hp;
 }
+
 
