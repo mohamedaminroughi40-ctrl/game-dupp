@@ -6,6 +6,7 @@ void boss::initBoss()
 	this->bIdleTex.loadFromFile("assets/org/orgIdle.png");
 	this->bWalkTex.loadFromFile("assets/org/orgWalk.png");
 	this->bWalkBAckTex.loadFromFile("assets/org/orgeWalkBack.png");
+	this->BDeathTex.loadFromFile("assets/org/orgDeath.png");
 
 	this->widthFrame = 144.f;
 	this->hightFrame = 80.f;
@@ -38,8 +39,8 @@ void boss::spriteUp()
 		this->animationTimeLimit = 0.15f;
 		break;
 	case dead:
-		this->maxFrame = 3;
-		this->getSprite().setTexture(this->bIdleTex);  // Or create bDeathTex
+		this->maxFrame = 6;
+		this->getSprite().setTexture(this->BDeathTex);  
 		this->animationTimeLimit = 0.25f;
 		break;
 	case attack:
@@ -48,6 +49,31 @@ void boss::spriteUp()
 		this->animationTimeLimit = 0.18f;
 		break;
 	}
+}
+
+void boss::stateHundling(float playerPosX)
+{
+		if (this->hp <= 0)
+		{
+			this->state = dead;
+			return;
+		}
+		float distance = abs(playerPosX - this->enemieSprite.getPosition().x + 100.f);
+		if (distance < 400) {
+			if (distance < 50)
+			{
+				this->state = attack;
+			}
+			else if (playerPosX < this->enemieSprite.getPosition().x)
+			{
+				this->state = Echase;
+			}
+			else
+			{
+				this->state = EshaseB;
+			}
+		}
+		else this->state = Eidle; 
 }
 
 void boss::update(float playerPosX)
@@ -71,5 +97,3 @@ int boss::getHeah()
 {
 	return this->hp;
 }
-
-

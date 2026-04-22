@@ -23,14 +23,29 @@ void GamePlay::initBackground(Vector2u winSize, int level)
         bgPath2 = "assets/bg2.png";
     }
 
+    // Load background 1
     if (!backgroundTex1.loadFromFile(bgPath1))
-        std::cout << "Error loading background 1 for level " << level << std::endl;
-    if (!backgroundTex2.loadFromFile(bgPath2))
-        std::cout << "Error loading background 2 for level " << level << std::endl;
+    {
+        std::cout << "ERROR: Could not load " << bgPath1 << " for level " << level << std::endl;
+        std::cout << "Falling back to assets/bg1.png" << std::endl;
+        if (!backgroundTex1.loadFromFile("assets/bg1.png"))
+            std::cout << "CRITICAL: Fallback background also missing!" << std::endl;
+    }
 
+    // Load background 2
+    if (!backgroundTex2.loadFromFile(bgPath2))
+    {
+        std::cout << "ERROR: Could not load " << bgPath2 << " for level " << level << std::endl;
+        std::cout << "Falling back to assets/bg2.png" << std::endl;
+        if (!backgroundTex2.loadFromFile("assets/bg2.png"))
+            std::cout << "CRITICAL: Fallback background 2 also missing!" << std::endl;
+    }
+
+    // Assign textures to sprites (important even if the same texture is reused)
     background1.setTexture(backgroundTex1);
     background2.setTexture(backgroundTex2);
 
+    // Calculate scales to exactly fill the window
     float scaleX1 = (float)winSize.x / backgroundTex1.getSize().x;
     float scaleY1 = (float)winSize.y / backgroundTex1.getSize().y;
     background1.setScale(scaleX1, scaleY1);
@@ -38,6 +53,11 @@ void GamePlay::initBackground(Vector2u winSize, int level)
     float scaleX2 = (float)winSize.x / backgroundTex2.getSize().x;
     float scaleY2 = (float)winSize.y / backgroundTex2.getSize().y;
     background2.setScale(scaleX2, scaleY2);
+
+    // Optional: print texture dimensions for debugging
+    std::cout << "Level " << level << " background1 size: "
+        << backgroundTex1.getSize().x << "x" << backgroundTex1.getSize().y
+        << " scaled to " << scaleX1 << "," << scaleY1 << std::endl;
 }
 
 void GamePlay::initEnemies()

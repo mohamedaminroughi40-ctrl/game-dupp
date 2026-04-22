@@ -56,7 +56,7 @@ public:
 	enemie();
 	void setposition(float posX, float poseY);
 	void animation();
-	void stateHundling(float playerPosX);
+	virtual void stateHundling(float playerPosX);
 	void movUp(float playerPosX);
 	virtual void spriteUp();
 	void update(float playerPosX);

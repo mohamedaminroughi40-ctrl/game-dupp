@@ -13,10 +13,11 @@ private:
 	Texture bIdleTex;
 	Texture bWalkTex;
 	Texture bWalkBAckTex;
+	Texture BDeathTex;
 
 	void initBoss();
-	void spriteUp() override;  // Override parent method
-
+	void spriteUp(); 
+	void stateHundling(float playerPosX);
 public:
 	boss();
 	void update(float playerPosX);
